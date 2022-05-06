@@ -1,4 +1,3 @@
-from tabnanny import check
 import tkinter as tk
 from tkinter import * 
 from tkinter.ttk import *
