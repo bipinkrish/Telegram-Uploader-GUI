@@ -1,3 +1,4 @@
+from tabnanny import check
 import tkinter as tk
 from tkinter import * 
 from tkinter.ttk import *
@@ -108,13 +109,6 @@ class tele:
         self.sub_btn = tk.Button(self.root, text='Upload',command=self.bart)
         self.sub_btn.place(x=370, y=700)
 
-        #check
-        if(self.checkfileexists):
-            pass
-        else:
-            apiii = requests.get("https://archive.org/download/telegram-bot-api/telegram-bot-api")
-            with open("telegram-bot-api","wb") as apii:
-                apii.write(apiii.content)
 
     def bart(self):
         c=threading.Thread(target=self.clicked,daemon=True)
@@ -190,7 +184,7 @@ class tele:
             file.write(info)
 
         #upload
-        url = f'http://localhost:7777/bot{self.token}/sendDocument?chat_id={self.cid}'
+        url = f'http://localhost:8081/bot{self.token}/sendDocument?chat_id={self.cid}'
         for ele in self.files:
             filepath = ele
             print("sending file")
@@ -235,17 +229,11 @@ class tele:
             bot.log_out()
         except:
             pass 
-        cmd=f'telegram-bot-api --api-id={self.apid} --api-hash={self.apihas} --local  -p 7777'
-        print("server started")
+        
+        os.system("freeport 8081")
+        cmd = "docker run -p 8081:8081 -e TELEGRAM_API_ID=11223922 -e TELEGRAM_API_HASH=ac6664c07855e0455095d970a98a082d -t riftbit/telegram-bot-api"
+        print("Server Starting")
         os.system(cmd)
-
-    def checkfileexists():
-        path = f"./telegram-bot-api"
-        if (os.path.exists(path)):
-            return 1
-
-        return 0
-
 
 t = tele()
 t.run()
