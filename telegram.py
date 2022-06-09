@@ -1,26 +1,46 @@
-from tabnanny import check
 import tkinter as tk
 from tkinter import * 
 from tkinter.ttk import *
 from tkinter import Button, Label, ttk
-from os.path import exists
-from tkinter.messagebox import NO
 from tkinter import filedialog
 import os
 import threading
-from turtle import width
-import requests
 import linecache
-import time
-import telebot
-import psutil
+from pyrogram import *
+from pyrogram import Client
+#import requests
+#import time
+#import telebot
+#import psutil
 
+#clientstarting
+try:
+    t = linecache.getline(r"info.txt", 1)
+    t = t.split('\n')[0]
+    ci = linecache.getline(r"info.txt", 2)
+    ci = ci.split('\n')[0]
+    ai = linecache.getline(r"info.txt", 3)
+    ai = ai.split('\n')[0]
+    ah = linecache.getline(r"info.txt", 4)
+    ah = ah.split('\n')[0]
+
+    app = Client("my_bot",api_id=ai, api_hash=ah,bot_token=t)
+
+except:
+    print("client not started")
+
+
+#class
 class tele:
 
-    
     def run(self):
-        self.flag = 0
-        self.tvalue = 0
+        #app = Client("my_bot")
+        try:
+            with app:
+              app.send_message(623741973,"Started")
+        except:
+            pass      
+        #self.tvalue = 0
         self.root.mainloop()
 
     def __init__(self) -> None:
@@ -42,16 +62,8 @@ class tele:
         self.apihash = tk.StringVar()
         self.chatid = tk.StringVar()
 
+        #settingvcontent
         try:
-            t = linecache.getline(r"info.txt", 1)
-            t = t.split('\n')[0]
-            ci = linecache.getline(r"info.txt", 2)
-            ci = ci.split('\n')[0]
-            ai = linecache.getline(r"info.txt", 3)
-            ai = ai.split('\n')[0]
-            ah = linecache.getline(r"info.txt", 4)
-            ah = ah.split('\n')[0]
-
             self.bottoken.set(t)
             self.apiid.set(ai)
             self.apihash.set(ah)
@@ -82,8 +94,8 @@ class tele:
         #setup
         self.set_btn = tk.Button(self.root, text='Set up',command=self.temp)
         self.set_btn.place(x=370, y=290)
-        self.onlylabel = tk.Label(self.root, text='(only need to setup again, when you reboot the system)', font=('calibre', 10))
-        self.onlylabel.place(x=230, y=330)
+        self.onlylabel = tk.Label(self.root, text='(Set Values then click Setup and Restart, \nno need to setup again untill you change values)', font=('calibre', 10))
+        self.onlylabel.place(x=260, y=330)
 
         #chat
         self.chatidlabel.place(x=150, y=400)
@@ -97,27 +109,21 @@ class tele:
         self.browfol = tk.Button(self.root, text='Select Thumbnail', command=self.browseThumb, width=15, height=1)
         self.browfol.place(x=90, y=520)
 
+        #optinal
+        self.optinallabel = tk.Label(self.root, text='(Optional)', font=('calibre', 10))
+        self.optinallabel.place(x=120, y=560)
+
         #bar
         self.progress = Progressbar(self.root, orient = HORIZONTAL,length = 700, mode = 'determinate')
         self.progress.place(x=50,y=640)
 
-        # This button will initialize
-        #self.p = tk.Button(self.root, text = 'Start', command = self.bart)
-        #self.p.place(x=0,y=0)
-
         #submit
-        self.sub_btn = tk.Button(self.root, text='Upload',command=self.bart)
+        self.sub_btn = tk.Button(self.root, text='Upload',command=self.clicked)
         self.sub_btn.place(x=370, y=700)
 
-
-    def bart(self):
-        c=threading.Thread(target=self.clicked,daemon=True)
-        c.start()
-        p=threading.Thread(target=self.bar,daemon=True)
-        p.start()
-
+    #updatingprogressbar
     def bar(self):
-        time.sleep(1)
+        '''time.sleep(1)
         self.root.update_idletasks()
 
         for ele in self.files:
@@ -141,9 +147,22 @@ class tele:
                 old_value = new_value
                 if self.pv >= 99 and self.pv <=100:
                     self.progresing = False
-                    self.progress['value'] = 0
+                    self.progress['value'] = 0'''
 
-        
+        self.progress['value'] = int(self.statuss)
+        self.root.update_idletasks()
+
+    #calculatingprogress
+    async def progresstg(self,current, total):     
+        '''try:
+            await app.edit_message_text(chat_id=self.mess.chat.id,message_id=self.mess.id,text=f"{current * 100 / total:.1f}%")                
+        except:
+            pass'''
+        self.statuss = current * 100 / total
+        s=threading.Thread(target=self.bar(),daemon=True)
+        s.start()
+
+    #browsefiles
     def browseFiles(self):
         try:
             self.flabel.config(text=" ")
@@ -152,6 +171,7 @@ class tele:
         self.files = filedialog.askopenfilenames(initialdir="./", title="Select a File", filetypes=(("all files", "*.*"),("zip files", "*.zip*")))
         self.flabel = tk.Label(self.root, text=self.files, font=('calibre', 10, 'bold')).place(x=250,y=463)
 
+    #browsethumb
     def browseThumb(self):
         try:
             self.tlabel.config(text=" ")
@@ -160,6 +180,7 @@ class tele:
         self.thumb = filedialog.askopenfilename(initialdir="./", title="Select a Picture", filetypes=(("jpg file", "*.jpg*"),("png file", "*.png*")))
         self.tlabel = tk.Label(self.root, text=self.thumb, font=('calibre', 10, 'bold')).place(x=250,y=523)
 
+    #gettingfilepaths
     def get_filepaths(self,directory):
         file_paths = []
         for root, directories, files in os.walk(directory):
@@ -169,9 +190,38 @@ class tele:
 
         return file_paths
     
+    #actualmain
     def clicked(self):
         self.sub_btn.config(state= "disabled")
+        self.cid = self.chatidenentry.get()
 
+        with app:
+              self.mess = app.send_message(self.cid,"Uploading") 
+
+        #upload
+        #url = f'http://localhost:8081/bot{self.token}/sendDocument?chat_id={self.cid}'
+        for ele in self.files:
+            filepath = ele
+            print("sending file")
+            try:
+                #r = requests.post(url, files={"document": open(filepath, 'rb'),"thumb": open(f"{self.thumb}","rb")})
+                with app:
+                   app.send_document(chat_id=self.cid, document=filepath, thumb=self.thumb, progress=self.progresstg)
+            except:
+                #r = requests.post(url, files={"document": open(filepath, 'rb')})   
+                with app:
+                    app.edit_message_text(chat_id=self.mess.chat.id,message_id=self.mess.id,text="Thumbnail not Found or Selected one is Bigger\n(should be <200kb), Uploding without it")
+                    #self.mess = app.send_message(self.cid,"Progress") 
+                    app.send_document(chat_id=self.cid, document=filepath, progress=self.progresstg)
+
+            #print(r.text)
+            #self.tvalue = 0
+            self.progress['value'] = 0
+            self.sub_btn.config(state= "normal")
+            self.root.update_idletasks()
+
+    #settingnewvalues
+    def temp(self):
         #getval
         self.token = self.bottokenentry.get()
         self.cid = self.chatidenentry.get()
@@ -183,27 +233,15 @@ class tele:
             info = f"{self.token}\n{self.cid}\n{self.apid}\n{self.apihas}"
             file.write(info)
 
-        #upload
-        url = f'http://localhost:8081/bot{self.token}/sendDocument?chat_id={self.cid}'
-        for ele in self.files:
-            filepath = ele
-            print("sending file")
-            try:
-                r = requests.post(url, files={"document": open(filepath, 'rb'),"thumb": open(f"{self.thumb}","rb")})
-            except:
-                r = requests.post(url, files={"document": open(filepath, 'rb')})   
-            print(r.text)
-            self.progresing = False
-            self.tvalue = 0
-            self.progress['value'] = 0
-            self.sub_btn.config(state= "normal")
-            self.root.update_idletasks()
+        #disabling
+        self.bottokenentry.config(state= "disabled")
+        self.apiidentry.config(state= "disabled")
+        self.apihashentry.config(state= "disabled")
+        self.set_btn.config(state= "disabled")
+        self.set_btn.config(text= "Restart")   
+        self.sub_btn.config(state= "disabled")
 
-    def temp(self):
-        s=threading.Thread(target=self.setuptemp,daemon=True)
-        s.start()
-
-    def setuptemp(self):
+    '''def setuptemp(self):
 
         #startthred
         if(self.flag == 0):
@@ -214,9 +252,9 @@ class tele:
             self.bottokenentry.config(state= "disabled")
             self.apiidentry.config(state= "disabled")
             self.apihashentry.config(state= "disabled")
-            self.set_btn.config(state= "disabled")
+            self.set_btn.config(state= "disabled")'''
 
-    def ss(self):
+    '''def ss(self):
 
         #getvalues
         self.token = self.bottokenentry.get()
@@ -233,8 +271,9 @@ class tele:
         os.system("freeport 8081")
         cmd = "docker run -p 8081:8081 -e TELEGRAM_API_ID=11223922 -e TELEGRAM_API_HASH=ac6664c07855e0455095d970a98a082d -t riftbit/telegram-bot-api"
         print("Server Starting")
-        os.system(cmd)
+        os.system(cmd)'''
 
+
+#running
 t = tele()
 t.run()
-
