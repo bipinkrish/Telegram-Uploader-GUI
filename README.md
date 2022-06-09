@@ -4,7 +4,7 @@ Features: Thumbnail support, Fast Upload (bypass the speed limit set according t
 
 Requirement: Pyrogram
 
-pip install Pyrogram 
+$ pip install Pyrogram 
 
 If you just want to use then download complied version from releases section
 
