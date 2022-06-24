@@ -8,6 +8,8 @@ Requirement: Pyrogram and tgCrypto (optional)
 pip install -U pyrogram tgcrypto
 ```
 
+# End Users
+
 If you just want to use then download complied version from releases section
 (Windows users may experience apllication not responding error, dont woryy it will return to normal when the file uploaded)
 
